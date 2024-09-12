@@ -1,0 +1,28 @@
+.success-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(135deg, #4285f4, #34a853);
+}
+
+.success-container {
+  max-width: 800px;
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  text-align: center;
+}
+
+#regis {
+  color: #34a853;
+  margin-bottom: 1rem;
+}
+
+#text {
+  color: #333333;
+  margin-bottom: 0.5rem;
+}
