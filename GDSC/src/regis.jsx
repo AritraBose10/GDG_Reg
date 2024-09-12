@@ -19,7 +19,7 @@ const GDGRegistrationForm = () => {
   const navigate = useNavigate();
   const onSubmit = async (data) => {
     try {
-      const response = await fetch("http://localhost:5000/check-existing", {
+      const response = await fetch("https://gdg-reg.onrender.com/check-existing", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -53,7 +53,7 @@ const GDGRegistrationForm = () => {
   };
 
   const confirmSubmit = () => {
-    fetch("http://localhost:5000/register", {
+    fetch("https://gdg-reg.onrender.com/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
@@ -64,7 +64,7 @@ const GDGRegistrationForm = () => {
         setShowConfirmation(false);
         resetForm();
         setTimeout(() => {
-          navigate("/success"); // Redirect to the success page
+          navigate("/success"); 
         }, 1500);
       })
       .catch(() => {
