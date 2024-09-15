@@ -10,6 +10,9 @@ const app = express();
 mongoose.connect(
   "mongodb+srv://aritraboselm10:Aritra2003@cluster0.u4hbj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 );
+mongoose.connection.on("connected", () => {
+  console.log("Connected to MongoDB successfully!");
+});
 
 // Define a schema and model for registration data
 const registrationSchema = new mongoose.Schema({
@@ -22,6 +25,8 @@ const registrationSchema = new mongoose.Schema({
   pastMember: String,
   skills: [{ skill: String, level: String }],
   roles: String,
+  technicalDomains: [String],
+  nonTechnicalDomains: [String],
   portfolio: String,
   reason: String,
   commitment: String,
@@ -71,6 +76,8 @@ app.post("/register", async (req, res) => {
     pastMember,
     skills,
     roles,
+    technicalDomains, // Add technical domains
+    nonTechnicalDomains, // Add non-technical domains
     portfolio,
     reason,
     commitment,
@@ -88,6 +95,8 @@ app.post("/register", async (req, res) => {
       pastMember,
       skills,
       roles,
+      technicalDomains, // Add technical domains to the document
+      nonTechnicalDomains, // Add non-technical domains to the document
       portfolio,
       reason,
       commitment,
