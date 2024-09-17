@@ -10,7 +10,7 @@ import {
   Phone,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import "./GDGRegistrationForm.css";
+import "./Member.css";
 
 const API_URL = "https://gdg-reg.onrender.com/api/registrations";
 
@@ -20,6 +20,7 @@ const BalancedStudentDetailsPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCount, setSelectedCount] = useState(0);
+  const [selectedCandidates, setSelectedCandidates] = useState([]);
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -31,6 +32,9 @@ const BalancedStudentDetailsPage = () => {
         const data = await response.json();
         setStudents(data);
         setIsLoading(false);
+        const savedSelection =
+          JSON.parse(localStorage.getItem("selectedCandidates")) || [];
+        setSelectedCandidates(savedSelection);
       } catch (error) {
         setError(error.message);
         setIsLoading(false);
@@ -66,10 +70,7 @@ const BalancedStudentDetailsPage = () => {
         name: students[currentIndex].fullName,
         email: students[currentIndex].email,
       };
-      const handleClearLocalStorage = () => {
-        localStorage.clear();
-        alert("Local storage has been cleared.");
-      };
+
       // Retrieve existing data from localStorage or initialize as empty array
       const existingData =
         JSON.parse(localStorage.getItem("selectedCandidates")) || [];
@@ -87,6 +88,7 @@ const BalancedStudentDetailsPage = () => {
           JSON.stringify(existingData)
         );
         setSelectedCount(existingData.length);
+        setSelectedCandidates(existingData); // Update state
 
         alert(`Selected student: ${selectedStudent.name}`);
       } else {
@@ -261,8 +263,22 @@ const BalancedStudentDetailsPage = () => {
           </div>
 
           <div className="select-button-container">
-            <button onClick={handleSelect} className="select-button">
-              <Check /> Select Candidate
+            <button
+              onClick={handleSelect}
+              className={`select-button ${
+                selectedCandidates.some(
+                  (candidate) => candidate.email === currentStudent.email
+                )
+                  ? "selected"
+                  : ""
+              }`}
+            >
+              <Check />{" "}
+              {selectedCandidates.some(
+                (candidate) => candidate.email === currentStudent.email
+              )
+                ? "Selected"
+                : "Select Candidate"}
             </button>
           </div>
         </div>
