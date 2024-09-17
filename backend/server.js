@@ -117,6 +117,16 @@ app.post("/register", async (req, res) => {
     }
   }
 });
+app.get("/api/registrations", async (req, res) => {
+  try {
+    const registrations = await Registration.find(); // Fetch all registrations
+    console.log("Registrations from DB:", registrations); // Log the fetched data
+    res.json(registrations);
+  } catch (error) {
+    console.error("Error fetching registrations:", error);
+    res.status(500).json({ message: "Error fetching data" });
+  }
+});
 
 // Start the server
 const PORT = process.env.PORT || 5000;
