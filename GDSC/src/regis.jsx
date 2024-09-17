@@ -193,6 +193,10 @@ const BalancedStudentDetailsPage = () => {
                   <span className="label">Roles:</span> {currentStudent.roles}
                 </p>
               </div>
+              <p>
+                <span className="label">Past Membership:</span>{" "}
+                {currentStudent.pastMember || "No"}
+              </p>
               <div className="skills-section">
                 <p className="label">Skills:</p>
                 <div className="skills-list">
