@@ -397,3 +397,16 @@ body {
   box-shadow: 0 5px #666; /* Shadow to simulate pressed effect */
   transform: translateY(4px); /* Move button down to simulate pressing */
 }
+.select-button {
+  background: #1e7bdd;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.select-button.selected {
+  background: #218838;
+}
