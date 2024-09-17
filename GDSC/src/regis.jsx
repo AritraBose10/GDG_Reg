@@ -10,7 +10,7 @@ import {
   Phone,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import "./GDGRegistrationForm.css";
+import "./Member.css";
 
 const API_URL = "https://gdg-reg.onrender.com/api/registrations";
 
@@ -228,17 +228,20 @@ const BalancedStudentDetailsPage = () => {
                   </div>
                 </div>
               )}
-              <div className="portfolio-section">
-                <p className="label">Portfolio:</p>
-                <a
-                  href={currentStudent.portfolio}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="portfolio-link"
-                >
-                  View <ExternalLink className="icon" />
-                </a>
-              </div>
+              {currentStudent.portfolio && (
+                <div className="portfolio-section">
+                  <p className="label">Portfolio:</p>
+                  <a
+                    href={currentStudent.portfolio}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="portfolio-link"
+                  >
+                    View <ExternalLink className="icon" />
+                  </a>
+                </div>
+              )}
+
               <div className="application-reason">
                 <p className="label">Application:</p>
                 <p className="reason-text">
