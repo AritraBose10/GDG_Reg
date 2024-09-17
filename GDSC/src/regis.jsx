@@ -10,7 +10,7 @@ import {
   Phone,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import "./Member.css";
+import "./GDGRegistrationForm.css";
 
 const API_URL = "https://gdg-reg.onrender.com/api/registrations";
 
