@@ -8,7 +8,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<GDGRegistrationForm />} />
-        <Route path="/success" element={<SuccessPage />} />
+       
       </Routes>
     </Router>
   );
