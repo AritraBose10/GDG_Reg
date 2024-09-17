@@ -1,386 +1,274 @@
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import {
+  Briefcase,
+  Calendar,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  GraduationCap,
+  Mail,
+  Phone,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
 import "./GDGRegistrationForm.css";
 
-const GDGRegistrationForm = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm();
-  const [skills, setSkills] = useState([{ skill: "", level: "" }]);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [formData, setFormData] = useState({});
-  const [portfolioLink, setPortfolioLink] = useState("");
-  const navigate = useNavigate();
-  const onSubmit = async (data) => {
-    try {
-      const response = await fetch("https://gdg-reg.onrender.com/check-existing", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: data.email,
-          contactNumber: data.contactNumber,
-          collegeId: data.collegeId,
-        }),
-      });
+const API_URL = "https://gdg-reg.onrender.com/api/registrations";
 
-      const result = await response.json();
+const BalancedStudentDetailsPage = () => {
+  const [students, setStudents] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedCount, setSelectedCount] = useState(0);
 
-      if (response.status === 400) {
-        if (result.emailExists)
-          toast.error("This email is already registered.");
-        if (result.contactExists)
-          toast.error("This contact number is already registered.");
-        if (result.collegeIdExists)
-          toast.error("This College ID is already registered.");
-        return;
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const response = await fetch(API_URL);
+        if (!response.ok) {
+          throw new Error("Error fetching data");
+        }
+        const data = await response.json();
+        setStudents(data);
+        setIsLoading(false);
+      } catch (error) {
+        setError(error.message);
+        setIsLoading(false);
       }
+    };
 
-      setFormData({
-        ...data,
-        skills,
-        portfolio: data.portfolio || "",
-      });
-      setShowConfirmation(true);
-    } catch (error) {
-      toast.error("An error occurred. Please try again.");
+    fetchStudents();
+  }, []);
+
+  const handlePrevious = () => {
+    setIsLoading(true);
+    setCurrentIndex((prevIndex) =>
+      prevIndex > 0 ? prevIndex - 1 : students.length - 1
+    );
+    setTimeout(() => setIsLoading(false), 500);
+  };
+
+  const handleNext = () => {
+    setIsLoading(true);
+    setCurrentIndex((prevIndex) =>
+      prevIndex < students.length - 1 ? prevIndex + 1 : 0
+    );
+    setTimeout(() => setIsLoading(false), 500);
+  };
+  const handleClearLocalStorage = () => {
+    localStorage.clear();
+    alert("Local storage has been cleared.");
+  };
+
+  const handleSelect = () => {
+    if (students.length > 0) {
+      const selectedStudent = {
+        name: students[currentIndex].fullName,
+        email: students[currentIndex].email,
+      };
+      const handleClearLocalStorage = () => {
+        localStorage.clear();
+        alert("Local storage has been cleared.");
+      };
+      // Retrieve existing data from localStorage or initialize as empty array
+      const existingData =
+        JSON.parse(localStorage.getItem("selectedCandidates")) || [];
+
+      // Check if the student is already selected
+      const index = existingData.findIndex(
+        (student) => student.email === selectedStudent.email
+      );
+
+      if (index === -1) {
+        // Add new selection
+        existingData.push(selectedStudent);
+        localStorage.setItem(
+          "selectedCandidates",
+          JSON.stringify(existingData)
+        );
+        setSelectedCount(existingData.length);
+
+        alert(`Selected student: ${selectedStudent.name}`);
+      } else {
+        alert("This candidate is already selected.");
+      }
+    }
+  };
+  const handleDownload = () => {
+    const data = JSON.parse(localStorage.getItem("selectedCandidates")) || [];
+
+    const csvRows = [
+      ["Name", "Email"], // Header row
+      ...data.map((student) => [student.name, student.email]),
+    ];
+
+    const csvContent = csvRows.map((e) => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+    const link = document.createElement("a");
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", "selected_candidates.csv");
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   };
 
-  const confirmSubmit = () => {
-    fetch("https://gdg-reg.onrender.com/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    })
-      .then((response) => response.json())
-      .then(() => {
-        toast.success("Registration successful!");
-        setShowConfirmation(false);
-        resetForm();
-        setTimeout(() => {
-          navigate("/success"); 
-        }, 1500);
-      })
-      .catch(() => {
-        toast.error("An error occurred. Please try again.");
-      });
-  };
+  // Export selected student details to Excel
 
-  const resetForm = () => {
-    setSkills([{ skill: "", level: "" }]);
-    setPortfolioLink("");
-    setFormData({});
-    setShowConfirmation(false);
-    reset();
-  };
+  if (isLoading) {
+    return (
+      <div className="loading-spinner">
+        <div className="spinner"></div>
+        Loading...
+      </div>
+    );
+  }
 
-  const addSkill = () => {
-    if (skills.length < 3) setSkills([...skills, { skill: "", level: "" }]);
-  };
+  if (error) {
+    return <div className="error-message">Error: {error}</div>;
+  }
 
-  const updateSkill = (index, field, value) => {
-    const updatedSkills = skills.map((skill, i) => {
-      if (i === index) return { ...skill, [field]: value };
-      return skill;
-    });
-    setSkills(updatedSkills);
-  };
+  if (students.length === 0) {
+    return <div>No students available.</div>;
+  }
 
-  const removeSkill = (index) => {
-    const updatedSkills = skills.filter((_, i) => i !== index);
-    setSkills(updatedSkills);
-  };
+  const currentStudent = students[currentIndex];
 
   return (
-    <div className="form-wrapper">
-      <ToastContainer />
-      <div className="form-container">
-        <div className="form-header">
-          <h2>GDG on Campus TIU Core Team Registration</h2>
-        </div>
-        <form onSubmit={handleSubmit(onSubmit)} className="registration-form">
-          {/* Personal Information Section */}
-          <div className="form-section">
-            <h3>Personal Information</h3>
-            {/* Full Name Input */}
-            <div className="form-group">
-              <input
-                id="fullName"
-                {...register("fullName", { required: "Full name is required" })}
-                placeholder="Full Name"
-              />
-              {errors.fullName && (
-                <p className="error-message">{errors.fullName.message}</p>
-              )}
-            </div>
-            {/* Email Input */}
-            <div className="form-group">
-              <input
-                id="email"
-                type="email"
-                {...register("email", { required: "Email is required" })}
-                placeholder="Email ID"
-              />
-              {errors.email && (
-                <p className="error-message">{errors.email.message}</p>
-              )}
-            </div>
-            {/* Contact Number Input */}
-            <div className="form-group">
-              <input
-                id="contactNumber"
-                type="tel"
-                {...register("contactNumber", {
-                  required: "Contact number is required",
-                })}
-                placeholder="Contact Number"
-              />
-              {errors.contactNumber && (
-                <p className="error-message">{errors.contactNumber.message}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Academic Information Section */}
-          <div className="form-section">
-            <h3>Academic Information</h3>
-            {/* Year of Study Input */}
-            <div className="form-group">
-              <select
-                id="yearOfStudy"
-                {...register("yearOfStudy", {
-                  required: "Year of study is required",
-                })}
-              >
-                <option value="">Year of Study</option>
-                <option value="1">1st Year</option>
-                <option value="2">2nd Year</option>
-                <option value="3">3rd Year</option>
-                <option value="4">4th Year</option>
-              </select>
-              {errors.yearOfStudy && (
-                <p className="error-message">{errors.yearOfStudy.message}</p>
-              )}
-            </div>
-            {/* Batch Input */}
-            <div className="form-group">
-              <input
-                id="batch"
-                {...register("batch", { required: "Batch is required" })}
-                placeholder="Batch"
-              />
-              {errors.batch && (
-                <p className="error-message">{errors.batch.message}</p>
-              )}
-            </div>
-            {/* College ID Input */}
-            <div className="form-group">
-              <input
-                id="collegeId"
-                {...register("collegeId", {
-                  required: "College ID is required",
-                })}
-                placeholder="College ID"
-              />
-              {errors.collegeId && (
-                <p className="error-message">{errors.collegeId.message}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Experience & Skills Section */}
-          <div className="form-section">
-            <h3>Experience & Skills</h3>
-            {/* Past Member Input */}
-            <div className="form-group">
-              <select
-                id="pastMember"
-                {...register("pastMember", {
-                  required: "This field is required",
-                })}
-              >
-                <option value="">
-                  Member of the Core Team in past year/years?
-                </option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-              </select>
-              {errors.pastMember && (
-                <p className="error-message">{errors.pastMember.message}</p>
-              )}
-            </div>
-            {/* Skills Input */}
-            <div className="form-group">
-              <label>Skills (Max 3)</label>
-              {skills.map((skill, index) => (
-                <div key={index} className="skill-input">
-                  <input
-                    placeholder="Skill"
-                    value={skill.skill}
-                    onChange={(e) =>
-                      updateSkill(index, "skill", e.target.value)
-                    }
-                  />
-                  <select
-                    value={skill.level}
-                    onChange={(e) =>
-                      updateSkill(index, "level", e.target.value)
-                    }
-                  >
-                    <option value="">Level</option>
-                    <option value="beginner">Beginner</option>
-                    <option value="intermediate">Intermediate</option>
-                    <option value="advanced">Advanced</option>
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => removeSkill(index)}
-                    className="remove-skill-btn"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-              {skills.length < 3 && (
-                <button
-                  type="button"
-                  onClick={addSkill}
-                  className="add-skill-btn"
-                >
-                  + Add Skill
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Role Information Section */}
-          <div className="form-section">
-            <h3>Role Information</h3>
-            {/* Role Selection Input */}
-            <div className="form-group">
-              <label htmlFor="roles">Which role are you applying for?</label>
-              <select
-                id="roles"
-                {...register("roles", { required: "Please select a role" })}
-              >
-                <option value="">Select a role</option>
-                <option value="Technical">Technical</option>
-                <option value="Non Technical">Non Technical</option>
-                <option value="Both">Both</option>
-              </select>
-              {errors.roles && (
-                <p className="error-message">{errors.roles.message}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Additional Information Section */}
-          <div className="form-section">
-            <h3>Additional Information</h3>
-            {/* Portfolio Link Input */}
-            <div className="form-group">
-              <label htmlFor="portfolio" className="text-input-label">
-                <input
-                  id="portfolio"
-                  type="text"
-                  placeholder="Link to your portfolio, or resume (Optional)"
-                  {...register("portfolio")}
-                  className="text-input"
-                  onChange={(e) => setPortfolioLink(e.target.value)}
-                />
-                {portfolioLink && (
-                  <div className="portfolio-info">
-                    <span className="portfolio-icon">🔗</span>
-                    <span>{portfolioLink}</span>
-                  </div>
-                )}
-              </label>
-            </div>
-
-            {/* Reason Textarea Input */}
-            <div className="form-group">
-              <textarea
-                id="reason"
-                {...register("reason", { required: "This field is required" })}
-                placeholder="Why do you want to be a part of GDSC Core Team?"
-              />
-              {errors.reason && (
-                <p className="error-message">{errors.reason.message}</p>
-              )}
-            </div>
-
-            {/* Commitment Select Input */}
-            <div className="form-group">
-              <label>
-                Can you keep up with regular attendance and active
-                participation?
-              </label>
-              <select
-                id="commitment"
-                {...register("commitment", {
-                  required: "This field is required",
-                })}
-              >
-                <option value="">Select an answer</option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-              </select>
-              {errors.commitment && (
-                <p className="error-message">{errors.commitment.message}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Form Alert */}
-          <div className="form-alert">
-            <p>
-              Please ensure all information provided is accurate. Your
-              application will be reviewed by the GDG TIU team.
-            </p>
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="button"
-            onClick={() => handleSubmit(onSubmit)()}
-            className="submit-button"
-          >
-            Submit Application
-          </button>
-        </form>
+    <div className="page-container">
+      <button onClick={handleDownload} className="download-button">
+        Download CSV
+      </button>
+      <button onClick={handleClearLocalStorage} className="reset-button">
+        Reset Local Storage
+      </button>
+      <div className="application-info">
+        Application Number: {currentIndex + 1}
       </div>
+      <div className="select-info">Selected Candidates: {selectedCount}</div>
 
-      {/* Confirmation Dialog */}
-      {showConfirmation && (
-        <div className="confirmation-overlay">
-          <div className="confirmation-dialog">
-            <h3>Confirm Submission</h3>
-            <p>
-              Are you sure you want to submit the form? Please ensure all
-              details are correct.
-            </p>
-            <div className="confirmation-buttons">
-              <button onClick={confirmSubmit} className="confirm-btn">
-                Yes, Submit
+      <div className="card">
+        <div className="card-content">
+          <div className="header">
+            <h2>{currentStudent.fullName}</h2>
+            <div className="navigation-buttons">
+              <button onClick={handlePrevious} className="nav-button">
+                <ChevronLeft />
               </button>
-              <button
-                onClick={() => setShowConfirmation(false)}
-                className="cancel-btn"
-              >
-                Cancel
+              <button onClick={handleNext} className="nav-button">
+                <ChevronRight />
               </button>
             </div>
           </div>
+
+          <div className="student-details">
+            <div className="details-column">
+              <div className="detail-item">
+                <Briefcase className="icon" />
+                <p>
+                  <span className="label">ID:</span> {currentStudent.collegeId}
+                </p>
+              </div>
+              <div className="detail-item">
+                <GraduationCap className="icon" />
+                <p>
+                  <span className="label">Year:</span>{" "}
+                  {currentStudent.yearOfStudy}
+                </p>
+              </div>
+              <div className="detail-item">
+                <Calendar className="icon" />
+                <p>
+                  <span className="label">Batch:</span> {currentStudent.batch}
+                </p>
+              </div>
+              <div className="detail-item">
+                <p>
+                  <span className="label">Roles:</span> {currentStudent.roles}
+                </p>
+              </div>
+              <div className="skills-section">
+                <p className="label">Skills:</p>
+                <div className="skills-list">
+                  {currentStudent.skills.map((skill, index) => (
+                    <div key={index} className="skill-item">
+                      <span className="skill-name">{skill.skill}</span>
+                      <span className="skill-level">{skill.level}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="details-column">
+              <div className="domains-section">
+                <p className="label">Technical Domains:</p>
+                <div className="domains-list">
+                  {currentStudent.technicalDomains.map((domain, index) => (
+                    <span key={index} className="domain-badge technical">
+                      {domain}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              {currentStudent.nonTechnicalDomains.length > 0 && (
+                <div className="domains-section">
+                  <p className="label">Non-Technical Domains:</p>
+                  <div className="domains-list">
+                    {currentStudent.nonTechnicalDomains.map((domain, index) => (
+                      <span key={index} className="domain-badge non-technical">
+                        {domain}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="portfolio-section">
+                <p className="label">Portfolio:</p>
+                <a
+                  href={currentStudent.portfolio}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="portfolio-link"
+                >
+                  View <ExternalLink className="icon" />
+                </a>
+              </div>
+              <div className="application-reason">
+                <p className="label">Application:</p>
+                <p className="reason-text">
+                  {currentStudent.reason.substring(0, 50)}...
+                </p>
+                <div className="tooltip">{currentStudent.reason}</div>
+              </div>
+              <div className="contact-section">
+                <div className="contact-info">
+                  <p>
+                    <Mail className="icon" />
+                    {currentStudent.email}
+                  </p>
+                  <br />
+                  <p>
+                    <Phone className="icon" />
+                    {currentStudent.contactNumber}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="select-button-container">
+            <button onClick={handleSelect} className="select-button">
+              <Check /> Select Candidate
+            </button>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
 
-export default GDGRegistrationForm;
+export default BalancedStudentDetailsPage;
