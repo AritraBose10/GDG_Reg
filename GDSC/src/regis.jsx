@@ -18,12 +18,12 @@ const API_URL = "https://gdg-reg.onrender.com/api/registrations";
 const BalancedStudentDetailsPage = () => {
   const [students, setStudents] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [filteredStudents, setFilteredStudents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCount, setSelectedCount] = useState(0);
   const [selectedCandidates, setSelectedCandidates] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredStudent, setFilteredStudent] = useState(null);
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -45,16 +45,30 @@ const BalancedStudentDetailsPage = () => {
     fetchStudents();
   }, []);
 
+  const handleSearch = () => {
+    const results = students.filter((student) =>
+      student.fullName.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    if (results.length > 0) {
+      setFilteredStudents(results);
+      setCurrentIndex(0); // Reset index to first match
+    } else {
+      alert("No student found with that name.");
+      setFilteredStudents([]);
+    }
+  };
+
   const handlePrevious = () => {
-    setIsLoading(true);
-    setCurrentIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : students.length - 1));
-    setTimeout(() => setIsLoading(false), 500);
+    setCurrentIndex((prevIndex) =>
+      prevIndex > 0 ? prevIndex - 1 : filteredStudents.length - 1
+    );
   };
 
   const handleNext = () => {
-    setIsLoading(true);
-    setCurrentIndex((prevIndex) => (prevIndex < students.length - 1 ? prevIndex + 1 : 0));
-    setTimeout(() => setIsLoading(false), 500);
+    setCurrentIndex((prevIndex) =>
+      prevIndex < filteredStudents.length - 1 ? prevIndex + 1 : 0
+    );
   };
 
   const handleClearLocalStorage = () => {
@@ -63,10 +77,10 @@ const BalancedStudentDetailsPage = () => {
   };
 
   const handleSelect = () => {
-    if (students.length > 0) {
+    if (filteredStudents.length > 0) {
       const selectedStudent = {
-        name: students[currentIndex].fullName,
-        email: students[currentIndex].email,
+        name: filteredStudents[currentIndex].fullName,
+        email: filteredStudents[currentIndex].email,
       };
 
       const existingData = JSON.parse(localStorage.getItem("selectedCandidates")) || [];
@@ -101,19 +115,6 @@ const BalancedStudentDetailsPage = () => {
     }
   };
 
-  const handleSearch = () => {
-    const foundStudent = students.find((student) =>
-      student.fullName.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    if (foundStudent) {
-      setFilteredStudent(foundStudent);
-      setCurrentIndex(students.indexOf(foundStudent));
-    } else {
-      alert("No student found with that name.");
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="loading-spinner">
@@ -131,7 +132,7 @@ const BalancedStudentDetailsPage = () => {
     return <div>No students available.</div>;
   }
 
-  const currentStudent = filteredStudent || students[currentIndex];
+  const currentStudent = filteredStudents.length > 0 ? filteredStudents[currentIndex] : students[currentIndex];
 
   return (
     <div className="page-container">
