@@ -399,4 +399,79 @@ body {
   box-shadow: 0 5px #666; /* Shadow to simulate pressed effect */
   transform: translateY(4px); /* Move button down to simulate pressing */
 }
+.search-container {
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  20px;
+
+}
+
+ 
+
+.search-input {
+
+  width: 300px;
+
+  padding: 10px 15px;
+
+  font-size: 16px;
+
+  border: 1px solid #ccc;
+
+  border-radius: 25px;
+
+  outline: none;
+
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+}
+
+ 
+
+.search-input:focus {
+
+  border-color: #007bff;
+
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+
+}
+
+ 
+
+.search-button {
+
+  padding: 10px 20px;
+
+  10px;
+
+  font-size: 16px;
+
+  background-color: #007bff;
+
+  color: white;
+
+  border: none;
+
+  border-radius: 25px;
+
+  cursor: pointer;
+
+  transition: background-color 0.3s ease;
+
+}
+
+ 
+
+.search-button:hover {
+
+  background-color: #0056b3;
+
+}
 
